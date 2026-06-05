@@ -153,13 +153,20 @@ export async function agentLoop(
         // 当使用了todo工具时，llm返回的数据就有可能包含todo，但是无法确定是哪一个轮次返回的
         if (i.name === "todo") {
           usedTodo = true;
+          console.log(pc.cyan(output));
         }
       }
     }
-    // 03：任务列表 同时最大化次数为3次
+    // 03：任务列表管理 — 跟踪未更新轮次，需要时插入提醒
     if (todoManager) {
-      if (usedTodo) {
+      if (!usedTodo) {
+        todoManager.noteRoundWithoutUpdate();
+        const reminder = todoManager.shouldReminder();
+        if (reminder) {
+          result.push({ type: "text", text: reminder });
+        }
       }
+      // 如果 usedTodo 为 true，update() 内部已重置 roundsSinceUpdate = 0
     }
 
     // 将上下文所有内容添加到messages里面

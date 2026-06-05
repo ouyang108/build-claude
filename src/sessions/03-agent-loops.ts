@@ -4,12 +4,13 @@ import readline from "node:readline";
 import { agentLoop, extractTextReply, WORKING_DIR } from "../core/agent-loop";
 import { BASH_TOOLS, BASE_HANDLERS } from "../core/tool";
 import pc from "picocolors";
-import type { Message, ToolDefinition, ToolHandler } from "../core/types";
+import type { Message, ToolHandler } from "../core/types";
 import {
   TodoManager,
   TODO_TOOL_DEFINITION,
   createTodoManager,
 } from "../planning/todo";
+import { exitWithCleanup, registerExitCleanup } from "../utils/exitCleanup";
 const S03_SYSTEM = `You are a coding agent at ${WORKING_DIR}.
 Use the todo tool for multi-step work.
 Keep exactly one step in_progress when a task has multiple steps.
@@ -18,15 +19,17 @@ Refresh the plan as work advances. Prefer tools over prose.`;
 // 初始化 TodoManager
 const todoManager = new TodoManager();
 
-const TOOLS = BASH_TOOLS;
+const TOOLS = [...BASH_TOOLS, TODO_TOOL_DEFINITION];
 // 工具所对应的handler方法
 const TOOL_HANDLERS: Record<string, ToolHandler> = {
   ...BASE_HANDLERS,
+  //  注册 todo 工具 更新todo计划
   todo: createTodoManager(todoManager),
 };
 
 // 历史记录
 const history: Message[] = [];
+
 async function main() {
   console.log(pc.green("开始执行"));
   console.log(pc.green("当前工作目录：" + WORKING_DIR));
@@ -36,6 +39,7 @@ async function main() {
     input: process.stdin,
     output: process.stdout,
   });
+  registerExitCleanup(rl);
   //  交互循环
   prompt(rl);
 }
@@ -43,8 +47,7 @@ const prompt = (rl: readline.Interface) => {
   rl.question("请输入命令：", async (query) => {
     const content = query.trim().toLowerCase();
     if (content === "q" || content === "exit") {
-      rl.close();
-      console.log(pc.green("退出执行"));
+      await exitWithCleanup(rl);
       return;
     }
     history.push({ role: "user", content: query });
@@ -64,6 +67,8 @@ const prompt = (rl: readline.Interface) => {
     } catch (error: any) {
       console.log(pc.red(error.message));
     }
+    // 继续提示，形成交互循环
+    prompt(rl);
   });
 };
 main();

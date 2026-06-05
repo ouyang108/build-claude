@@ -7,7 +7,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "01": "tsx src/sessions/01-agent-loos.ts",
-    "02": "tsx src/sessions/02-agent-loops.ts"
+    "02": "tsx src/sessions/02-agent-loops.ts",
+    "03": "tsx src/sessions/03-agent-loops.ts"
   },
   "keywords": [],
   "author": "",

@@ -1,7 +1,7 @@
 // Todo Manager - 会话内计划管理
 
 import type { TodoItem } from "../core/types";
-
+import pc from "picocolors";
 // 多轮没更新计划触发提醒
 const PLANNING_REMINDER_THRESHOLD = 3;
 /** 计划最大条目数（防止过长） */
@@ -104,6 +104,7 @@ export class TodoManager {
       (i) => i.status === "completed",
     ).length;
     lines.push(`\n(${completed}/${this.state.items.length} completed)`);
+    // console.log(pc.green(lines.join("\n")));
     return lines.join("\n");
   }
   //   获取状态 调试用
