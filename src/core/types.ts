@@ -1,0 +1,61 @@
+/**
+ * 核心类型定义
+ * 所有 session 共享的基础类型
+ */
+
+export interface Message {
+  role: "user" | "assistant" | "system"; //assistant 是大模型，system 是系统提示
+  content: string | ContentBlock[];
+}
+export type ContentBlock = TextBlock | ToolUseBlock | ToolResultBlock;
+export interface TextBlock {
+  type: "text";
+  text: string;
+}
+// 工具调用
+export interface ToolUseBlock {
+  type: "tool_use";
+  id: string;
+  name: string;
+  input: Record<string, unknown>;
+}
+// 工具调用结果
+export interface ToolResultBlock {
+  type: "tool_result";
+  tool_use_id: string;
+  content: string;
+  is_error?: boolean;
+}
+// 工具定义
+export interface ToolDefinition {
+  name: string;
+  description: string;
+  input_schema: ToolInputSchema;
+}
+
+// 工具输入参数
+export interface ToolInputSchema {
+  type: "object";
+  properties: Record<string, ToolProperty>;
+  required?: string[];
+}
+// 工具输入参数属性
+export interface ToolProperty {
+  type: string;
+  description?: string;
+  enum?: string[];
+  items?: ToolProperty;
+  properties?: Record<string, ToolProperty>; //  支持嵌套对象
+  required?: string[]; //  支持嵌套对象的 required
+}
+// 工具处理函数
+export type ToolHandler = (
+  input: Record<string, unknown>,
+) => string | Promise<string>;
+
+export interface TodoItem {
+  id: string;
+  content: string;
+  status: "pending" | "in_progress" | "completed";
+  activeForm?: string;
+}
