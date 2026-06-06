@@ -120,6 +120,7 @@ import type { ToolDefinition } from "../core/types";
  */
 export const TODO_TOOL_DEFINITION: ToolDefinition = {
   name: "todo",
+  // 中文：为多步骤工作重写当前会话计划。
   description: "Rewrite the current session plan for multi-step work.",
   input_schema: {
     type: "object",
@@ -129,14 +130,17 @@ export const TODO_TOOL_DEFINITION: ToolDefinition = {
         items: {
           type: "object",
           properties: {
+            // 中文：这个步骤要做什么。
             content: { type: "string", description: "What this step does" },
             status: {
               type: "string",
               enum: ["pending", "in_progress", "completed"],
+              // 中文：这个步骤当前的状态。
               description: "Current status of this step",
             },
             activeForm: {
               type: "string",
+              // 中文：可选的现在进行时标签，例如 "Reading the file"。
               description:
                 'Optional present-continuous label (e.g., "Reading the file")',
             },

@@ -108,12 +108,14 @@ export const runEdit: ToolHandler = async (input) => {
 export const BASH_TOOLS: ToolDefinition[] = [
   {
     name: "bash",
+    // 中文：运行一条 shell 命令。
     description: "Run a shell command.",
     input_schema: {
       type: "object", //表示input_schema是一个对象
       properties: {
         command: {
           type: "string", //表示command是一个字符串
+          // 中文：要运行的 shell 命令。
           description: "The shell command to run.",
         },
       },
@@ -122,16 +124,19 @@ export const BASH_TOOLS: ToolDefinition[] = [
   },
   {
     name: "read_file",
+    // 中文：读取文件内容。
     description: "Read file contents.",
     input_schema: {
       type: "object",
       properties: {
         path: {
           type: "string",
+          // 中文：要读取的文件路径。
           description: "The path to the file to read.",
         },
         limit: {
           type: "integer",
+          // 中文：最多读取多少行，可选。
           description: "The maximum number of lines to read. Optional.",
         },
       },
@@ -140,16 +145,19 @@ export const BASH_TOOLS: ToolDefinition[] = [
   },
   {
     name: "write_file",
+    // 中文：向文件写入内容。
     description: "Write content to file.",
     input_schema: {
       type: "object",
       properties: {
         path: {
           type: "string",
+          // 中文：要写入的文件路径。
           description: "The path to the file to write.",
         },
         content: {
           type: "string",
+          // 中文：要写入文件的内容。
           description: "The content to write to the file.",
         },
       },
@@ -158,15 +166,19 @@ export const BASH_TOOLS: ToolDefinition[] = [
   },
   {
     name: "edit_file",
+    // 中文：替换文件中的精确文本。
     description: "Replace exact text in file.",
     input_schema: {
       type: "object",
       properties: {
         path: {
           type: "string",
+          // 中文：要编辑的文件路径。
           description: "The path to the file to edit.",
         },
+        // 中文：要查找并替换的原文本。
         old_text: { type: "string", description: "Text to find and replace" },
+        // 中文：用于替换的新文本。
         new_text: { type: "string", description: "New text to insert" },
       },
       required: ["path", "old_text", "new_text"],

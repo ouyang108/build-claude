@@ -59,3 +59,15 @@ export interface TodoItem {
   status: "pending" | "in_progress" | "completed";
   activeForm?: string;
 }
+
+// ============================================================================
+// Subagent 相关 (04)
+// ============================================================================
+
+export interface SubagentContext {
+  messages: Message[]; // 子 Agent 自己的上下文（从空白开始）
+  tools: ToolDefinition[]; // 子 Agent 可用的工具（过滤后的）
+  handlers: Record<string, ToolHandler>; // 工具执行函数
+  maxTurns: number; // 最大轮数，防止无限跑
+  systemPrompt: string; // 子 Agent 的系统提示词
+}

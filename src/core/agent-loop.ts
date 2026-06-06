@@ -34,16 +34,16 @@ export const apiKey = process.env.ANTHROPIC_AUTH_TOKEN;
 export const baseURL = process.env.ANTHROPIC_BASE_URL;
 console.log(baseURL);
 
-const client = new Anthropic({
+export const client = new Anthropic({
   apiKey,
   baseURL,
 });
 
-function createRunId(): string {
+export function createRunId(): string {
   return new Date().toISOString().replace(/[:.]/g, "-");
 }
 // 保存llm响应
-async function saveLlmResponse(
+export async function saveLlmResponse(
   runId: string,
   turn: number,
   response: Anthropic.Messages.Message,
@@ -87,6 +87,7 @@ export async function agentLoop(
   //   系统提示词
   const systemPrompt =
     system ??
+    // 中文：你是工作目录下的编程代理。使用工具解决任务。直接行动，不要只解释。
     `You are a coding agent at ${WORKING_DIR}. Use tools to solve tasks. Act, don't explain.`;
   // 将tools转换成Anthropic支持的格式
   const anthropicTools: Anthropic.Messages.Tool[] = tools.map((tool) => ({
