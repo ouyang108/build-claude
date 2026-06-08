@@ -71,3 +71,15 @@ export interface SubagentContext {
   maxTurns: number; // 最大轮数，防止无限跑
   systemPrompt: string; // 子 Agent 的系统提示词
 }
+
+// skill
+export interface SkillDocument {
+  manifest: SkillManifest; // 元信息
+  body: string; // 完整正文
+}
+// skill 元信息
+export interface SkillManifest {
+  name: string;
+  description: string;
+  path: string;
+}
