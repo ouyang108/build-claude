@@ -10,3 +10,4 @@ learn/output/
 .DS_Store
 Thumbs.db
 .history/
+.llm-responses/

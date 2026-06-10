@@ -83,3 +83,20 @@ export interface SkillManifest {
   description: string;
   path: string;
 }
+
+/**
+ * 上下文压缩状态
+ * @property hasCompacted 是否已做过完整压缩
+ * @property lastSummary 最近一次压缩摘要
+ * @property recentFiles 最近碰过的文件，压缩后可用于追踪和重新打开
+ */
+export interface CompactState {
+  /** 是否已做过完整压缩 */
+  hasCompacted: boolean;
+
+  /** 最近一次压缩摘要 */
+  lastSummary: string;
+
+  /** 最近碰过的文件，压缩后可用于追踪和重新打开 */
+  recentFiles: string[];
+}

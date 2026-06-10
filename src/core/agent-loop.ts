@@ -173,6 +173,7 @@ export async function agentLoop(
     // 将上下文所有内容添加到messages里面
 
     // 重新调用llm 因为需要llm去判断是否还需要继续使用工具还是中断循环
+    // 因为一次 assistant 回复里可能包含多个 tool_use，所以后面要用同一条 user message 一次性返回所有对应的 tool_result
     messages.push({
       role: "user",
       content: result as ContentBlock[],
@@ -190,3 +191,11 @@ export function extractTextReply(messages: Message[]): string {
   }
   return "";
 }
+export const convertToolsToAnthropic = (tools: ToolDefinition[]) => {
+  const anthropicTools: Anthropic.Messages.Tool[] = tools.map((tool) => ({
+    name: tool.name,
+    description: tool.description,
+    input_schema: tool.input_schema as Anthropic.Messages.Tool.InputSchema,
+  }));
+  return anthropicTools;
+};
