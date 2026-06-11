@@ -100,3 +100,56 @@ export interface CompactState {
   /** 最近碰过的文件，压缩后可用于追踪和重新打开 */
   recentFiles: string[];
 }
+
+//
+/**
+ * 权限相关
+ * @property default 未命中规则时问用户
+ * @property plan 只允许读，不允许写
+ * @property auto  简单安全操作自动过，危险操作再问
+ * */
+export type PermissionMode = "default" | "plan" | "auto";
+
+/**
+ * 权限行为
+ * @property allow 允许
+ * @property deny 拒绝
+ * @property ask 询问用户是否允许
+ */
+export type PermissionBehavior = "allow" | "deny" | "ask";
+
+/**
+ * 权限规则
+ * @property tool 工具名称 或 *
+ * @property behavior 权限行为
+ * @property path 路径 路径 glob 模式
+ * @property content 内容 glob 模式（用于 bash）
+ */
+export interface PermissionRule {
+  tool: string;
+  /** 权限行为 */
+  behavior: PermissionBehavior;
+  /** 路径 */
+  path?: string;
+  /** 内容 */
+  content?: string;
+}
+/**
+ * 权限决策结果
+ * @property reason 决策原因
+ * @property behavior 权限行为
+ */
+export interface PermissionDecision {
+  reason: string;
+  /** 权限行为 */
+  behavior: PermissionBehavior;
+}
+/**
+ * bash 验证失败
+ * @property name 验证器名称
+ * @property pattern 匹配的模式
+ */
+export interface BashValidationFailure {
+  name: string; // 验证器名称
+  pattern: string; // 匹配的模式
+}
