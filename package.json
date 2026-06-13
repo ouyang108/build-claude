@@ -10,7 +10,8 @@
     "02": "tsx src/sessions/02-agent-loops.ts",
     "03": "tsx src/sessions/03-agent-loops.ts",
     "05": "tsx src/sessions/05-skill.ts",
-    "07": "tsx src/sessions/07-permission-system.ts"
+    "07": "tsx src/sessions/07-permission-system.ts",
+    "08": "tsx src/sessions/s08-hook-system.ts"
   },
   "keywords": [],
   "author": "",

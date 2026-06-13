@@ -20,7 +20,7 @@ import type {
   PermissionDecision,
 } from "../core/types";
 import picocolors from "picocolors";
-
+import { exitWithCleanup, registerExitCleanup } from "../utils/exitCleanup";
 // ============================================================================
 // 系统提示词
 // ============================================================================
@@ -100,19 +100,26 @@ async function agentLoopPermission(
         const answer = await new Promise<string>((resolve) => {
           rl.question("  Allow? (y/n/always): ", resolve);
         });
-        perms.handleUserResponse(answer);
-        const lowercaseAnswer = answer.toLowerCase();
-        if (
-          lowercaseAnswer === "always" ||
-          lowercaseAnswer === "y" ||
-          lowercaseAnswer === "yes"
-        ) {
-          // 调用工具
+        // 调用工具的回调函数
+        const toolCb = async () => {
           const handler = BASE_HANDLERS[toolName as keyof typeof BASE_HANDLERS];
           output = handler
             ? await handler(toolInput)
             : `Unknown tool: ${toolName}`;
-        }
+        };
+        await perms.handleUserResponse(answer, toolCb);
+        const lowercaseAnswer = answer.toLowerCase();
+        // if (
+        //   lowercaseAnswer === "always" ||
+        //   lowercaseAnswer === "y" ||
+        //   lowercaseAnswer === "yes"
+        // ) {
+        //   // 调用工具
+        //   const handler = BASE_HANDLERS[toolName as keyof typeof BASE_HANDLERS];
+        //   output = handler
+        //     ? await handler(toolInput)
+        //     : `Unknown tool: ${toolName}`;
+        // }
         if (lowercaseAnswer === "n" || lowercaseAnswer === "no") {
           output = `Permission denied by user for ${toolName}`;
         }
@@ -144,6 +151,7 @@ async function main() {
     input: process.stdin,
     output: process.stdout,
   });
+  registerExitCleanup(rl);
   //   选择权限模式
   console.log(picocolors.green("请选择权限模式： default, plan, auto"));
   const mode = await new Promise<string>((resolve) => {
@@ -179,6 +187,7 @@ async function main() {
       query.trim().toLowerCase() === "exit" ||
       !query.trim()
     ) {
+      exitWithCleanup(rl);
       break;
     }
 

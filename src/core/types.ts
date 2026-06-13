@@ -153,3 +153,47 @@ export interface BashValidationFailure {
   name: string; // 验证器名称
   pattern: string; // 匹配的模式
 }
+
+/**
+ * 钩子事件
+ * @property SessionStart 会话开始
+ * @property PreToolUse 工具调用前  检查、拦截、修改输入
+ * @property PostToolUse 工具调用后 日志、通知、追加输出
+ */
+export type HookEvent = "SessionStart" | "PreToolUse" | "PostToolUse";
+
+/** 单个 Hook 的定义 */
+/**
+ * 钩子定义
+ * @property matcher 工具名匹配，"*" 或省略表示所有工具
+ * @property command 要执行的 shell 命令
+ */
+export interface HookDefinition {
+  matcher?: string; // 工具名匹配，"*" 或省略表示所有工具
+  command: string; // 要执行的 shell 命令
+}
+/** Hook 执行时的上下文（告诉 Hook 当前发生了什么） */
+/**
+ * 钩子上下文
+ * @property tool_name 工具名
+ * @property tool_input 工具输入参数
+ * @property tool_output 工具输出结果（PostToolUse 才有）
+ */
+export interface HookContext {
+  tool_name: string; // 工具名
+  tool_input: Record<string, unknown>; // 工具输入参数
+  tool_output?: string; // 工具输出结果（PostToolUse 才有）
+}
+
+/** Hook 执行后的结果 */
+/**
+ * 钩子结果
+ * @property blocked 是否阻止工具执行
+ * @property blockReason 阻止的原因
+ * @property messages 要注入给模型的消息
+ */
+export interface HookResult {
+  blocked: boolean; // 是否阻止工具执行
+  blockReason?: string; // 阻止的原因
+  messages: string[]; // 要注入给模型的消息
+}

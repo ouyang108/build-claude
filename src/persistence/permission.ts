@@ -11,6 +11,7 @@
  * 4. ask_user     还不确定 → 问用户 y / n / always
  */
 
+import picocolors from "picocolors";
 import {
   PermissionMode,
   PermissionRule,
@@ -192,6 +193,7 @@ export class PermissionManager {
    * @param toolInput 工具输入
    * @returns 用户确认结果
    */
+  // TODO:本章暂时未使用
   async askUser(
     toolName: string,
     toolInput: Record<string, unknown>,
@@ -204,7 +206,7 @@ export class PermissionManager {
     });
   }
   // 处理当用户确认
-  handleUserResponse(approved: string) {
+  async handleUserResponse(approved: string, cb?: any) {
     if (!this.pendingAsk) return;
     const { resolve } = this.pendingAsk;
     if (approved === "always") {
@@ -215,10 +217,18 @@ export class PermissionManager {
         path: "*",
       });
       this.consecutiveDenials = 0;
+
       resolve(true);
+      if (cb) {
+        await cb();
+      }
     } else if (approved === "y" || approved === "yes") {
       this.consecutiveDenials = 0;
+
       resolve(true); //本次允许，不写入规则
+      if (cb) {
+        await cb();
+      }
     } else {
       this.consecutiveDenials++;
       if (this.consecutiveDenials >= this.maxConsecutiveDenials) {
@@ -233,31 +243,52 @@ export class PermissionManager {
     this.pendingAsk = undefined;
   }
 
-  //   匹配规则
+  /**
+   * 判断一条权限规则是否命中当前工具调用。
+   *
+   * 一条规则可能同时限制：
+   * - tool: 工具名，比如 bash / read_file / write_file，也可以是 "*" 表示任意工具
+   * - content: 命令内容模式，主要用于 bash.command
+   * - path: 文件路径模式，主要用于 read_file / write_file / edit_file
+   *
+   * 只有规则里写出来的条件全部匹配，才算命中。
+   */
   private matchesRule(
     rule: PermissionRule,
     toolName: string,
     toolInput: Record<string, unknown>,
   ): boolean {
-    // 比较工具名称
+    // 1. 工具名匹配：rule.tool 为 "*" 时表示匹配所有工具；否则必须和当前工具名完全相同。
     if (rule.tool !== toolName && rule.tool !== "*") return false;
-    // 内容匹配
+
+    // 2. 内容匹配：如果规则声明了 content，就用它去匹配 bash 工具传入的 command。
+    //    例如规则 content: "sudo *" 可以匹配 command: "sudo ls"。
     if (
       rule.content !== undefined &&
       !this.globMatch(toolInput.command as string, rule.content)
     )
       return false;
-    // 路径模式匹配（使用简单的 glob 匹配）
+
+    // 3. 路径匹配：如果规则声明了 path，并且不是 "*"，就用它匹配工具输入里的 path。
+    //    例如规则 path: "src/*.ts" 可以匹配 path: "src/index.ts"。
     if (rule.path && rule.path !== "*") {
       const path = (toolInput.path as string) ?? "";
       if (!this.globMatch(path, rule.path)) return false;
     }
+
+    // 走到这里说明规则里的所有限制都通过了，这条规则命中。
     return true;
   }
+
   /**
    * 简单的 glob 模式匹配
    *
    * 支持: * (任意字符), ? (单个字符)
+   *
+   * 实现方式：
+   * 1. 先把正则里的特殊字符转义，避免用户写的 "."、"+" 等被当成正则语法。
+   * 2. 再把 glob 里的 "*" 转成正则的 ".*"，把 "?" 转成正则的 "."。
+   * 3. 最后用 ^ 和 $ 包住，要求整段字符串完整匹配，而不是只匹配其中一部分。
    */
   private globMatch(str: string, pattern: string): boolean {
     // 将 glob 模式转换为正则表达式
@@ -266,24 +297,50 @@ export class PermissionManager {
       .replace(/\*/g, ".*") // * -> .*
       .replace(/\?/g, "."); // ? -> .
 
+    // 完整匹配：例如 "sudo ls" 能匹配 "sudo *"，但 "echo sudo ls" 不能匹配 "sudo *"。
     return new RegExp(`^${regexPattern}$`).test(str);
   }
 }
 
-// function BashCheck(toolName: string, toolInput: Record<string, unknown>, bashValidator: BashSecurityValidator) {
-//   const command = (toolInput.command as string) ?? "";
-//   const failures = bashValidator.validate(command);
-//   if (failures.length > 0) {
-//     // 如果是严重的直接拒绝,其他的正常
-//     const result = failures.some((f) => bashValidator.isSevereFailure(f));
-//     if (result) {
-//       return {
-//         behavior: "deny",
-//         reason: bashValidator.describeFailures(command),
-//       };
-//     }
-//     // 其他模式 escalate to ask
-//     const desc = bashValidator.describeFailures(command);
-//     return { behavior: "ask", reason: `Bash validator flagged: ${desc}` };
-//   }
-// }
+// 不同权限模式下的工具处理函数
+const toolHandlers = {
+  // 拒绝所有工具
+  deny: ({
+    permission,
+    toolName,
+  }: {
+    permission: PermissionDecision;
+    toolName: string;
+  }) => {
+    console.log(picocolors.red(`Tool ${toolName} is denied.`));
+    return `Permission denied: ${permission.reason}`;
+  },
+  // 需要询问
+  /**
+   * 询问用户是否允许调用工具
+   * @param permission 权限决策
+   * @param toolName 工具名称
+   * @param rl readline 实例
+   * @returns
+   */
+  ask: async ({
+    permission,
+    toolName,
+    rl,
+  }: {
+    permission: PermissionDecision;
+    toolName: string;
+    rl?: any;
+  }) => {
+    console.log(picocolors.yellow(`Tool ${toolName} is asking user.`));
+    // 询问用户
+    // 等待用户输入
+    const answer = await new Promise<string>((resolve) => {
+      rl.question("  Allow? (y/n/always): ", resolve);
+    });
+    // 调用用户确认
+
+    // 执行
+    return `Permission asked: ${permission.reason}`;
+  },
+};

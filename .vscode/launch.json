@@ -2,12 +2,12 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Debug pnpm s03",
+      "name": "Debug pnpm 08",
       "type": "node",
       "request": "launch",
       "cwd": "${workspaceFolder}",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["s03"],
+      "runtimeArgs": ["08"],
       "console": "integratedTerminal",
       "skipFiles": ["<node_internals>/**"]
     }
